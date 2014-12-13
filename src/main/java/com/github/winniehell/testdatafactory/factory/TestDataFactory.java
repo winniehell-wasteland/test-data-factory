@@ -10,11 +10,26 @@ import org.apache.commons.collections4.Factory;
 public interface TestDataFactory<T> extends Factory<T> {
 
     /**
+     * All parameters which may be passed to {@link TestDataFactory#with(Parameter, Object) factories}.
+     */
+    enum Parameter {
+        /**
+         * First dummy parameter.
+         */
+        PARAM_A,
+        /**
+         * Second dummy parameter.
+         */
+        PARAM_B
+    }
+
+    /**
      * Modifies factory to build test data with given parameter.
      *
-     * @param parameter dummy parameter to be passed to test data
+     * @param parameter {@link Parameter} to be passed to test data
+     * @param value parameter value
      * @return {@code this}
-     * @throws UnsupportedOperationException if test data does not support the dummy parameter
+     * @throws IllegalArgumentException if test data does not support the given parameter
      */
-    TestDataFactory<? extends T> withParameter(String parameter) throws UnsupportedOperationException;
+    TestDataFactory<? extends T> with(Parameter parameter, Object value) throws IllegalArgumentException;
 }

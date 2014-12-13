@@ -1,7 +1,7 @@
 package com.github.winniehell.testdatafactory.dummy;
 
 /**
- * Dummy class with parameter.
+ * Dummy class with mandatory parameter.
  *
  * @author winniehell
  */

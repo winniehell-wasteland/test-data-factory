@@ -5,20 +5,34 @@ import com.github.winniehell.testdatafactory.factory.TestDataFactoryException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static com.github.winniehell.testdatafactory.factory.TestDataFactory.Parameter.PARAM_A;
+import static com.github.winniehell.testdatafactory.factory.TestDataFactory.Parameter.PARAM_B;
+
 public class TestAClass {
     @Test
-    public void toStringTest() throws TestDataFactoryException {
+    public void withoutParameterTest() throws TestDataFactoryException {
         final AClass a = TestData
                 .forClass(AClass.class)
                 .create();
 
-        Assert.assertEquals(a.toString(), AClass.class.getSimpleName());
+        Assert.assertEquals(AClass.class.getSimpleName() + " with parameter = 'default'", a.toString());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void toStringWithParameterTest() throws TestDataFactoryException {
+    @Test
+    public void withParameterTest() throws TestDataFactoryException {
+        final String parameter = "foo";
+        final AClass a = TestData
+                .forClass(AClass.class)
+                .with(PARAM_A, parameter)
+                .create();
+
+        Assert.assertEquals(AClass.class.getSimpleName() + " with parameter = '" + parameter + "'", a.toString());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void withWrongParameterTest() throws TestDataFactoryException {
         TestData.forClass(AClass.class)
-                .withParameter("foo")
+                .with(PARAM_B, null)
                 .create();
     }
 }
