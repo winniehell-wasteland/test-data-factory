@@ -1,35 +1,44 @@
 package com.github.winniehell.testdatafactory.factory;
 
-import com.github.winniehell.testdatafactory.dummy.AClass;
-import com.github.winniehell.testdatafactory.dummy.BClass;
 import org.apache.commons.lang3.Validate;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Helper class for creating test data using a {@link #registerFactory(Class, TestDataFactory) registered}
- * {@link TestDataFactory}.
+ * Helper class for creating test data using a {@link #registerFactory(Class) registered} {@link
+ * TestDataFactory}.
  *
  * @author winniehell
  */
 public final class TestData {
-    private static final Map<Class<?>, TestDataFactory<?>> testDataFactories = new HashMap<>();
+
+    private static final Map<Class<?>, Class<? extends TestDataFactory<?>>> testDataFactories = new HashMap<>();
 
     static {
-        TestData.registerFactory(AClass.class, new AClassFactory());
-        TestData.registerFactory(BClass.class, new BClassFactory());
+        TestData.registerFactory(AClassFactory.class);
+        TestData.registerFactory(BClassFactory.class);
     }
 
     /**
-     * Registers a {@link TestDataFactory} for a given class under test.
+     * Registers a {@link TestDataFactory} to be used by {@link #forClass(Class)}.
      *
-     * @param classUnderTest {@link Class} to register the factory for
-     * @param factory {@link TestDataFactory} instance which is used for creating new factories by {@link #forClass(Class)}.
-     * @param <T> type of created test data
+     * @param factoryClass {@link TestDataFactory} class
      */
-    private static <T> void registerFactory(final Class<T> classUnderTest, final TestDataFactory<? extends T> factory) {
-        testDataFactories.put(classUnderTest, factory);
+    private static void registerFactory(final Class<? extends TestDataFactory<?>> factoryClass) {
+        try {
+            final TestDataFactory<?> dummyInstance = factoryClass.newInstance();
+            final Set<Class> supportedClasses = dummyInstance.getSupportedClasses();
+
+            for (final Class<?> classUnderTest : supportedClasses) {
+                Validate.isTrue(!testDataFactories.containsKey(classUnderTest),
+                        "There is already a factory registered for " + classUnderTest);
+                testDataFactories.put(classUnderTest, factoryClass);
+            }
+        } catch (final Exception e) {
+            System.err.println("Could not register factory " + factoryClass + "! " + e.getMessage());
+        }
     }
 
     /**
@@ -45,10 +54,9 @@ public final class TestData {
         try {
             Validate.isTrue(testDataFactories.containsKey(classUnderTest), "Unknown class under test!");
 
-            final TestDataFactory<?> factory = testDataFactories.get(classUnderTest);
+            final Class<? extends TestDataFactory<?>> factoryClass = testDataFactories.get(classUnderTest);
 
-            // clone factory to loose state of stateful factories
-            return (TestDataFactory<? extends T>) factory.getClass().newInstance();
+            return (TestDataFactory<? extends T>) factoryClass.newInstance();
         } catch (final Exception e) {
             throw new TestDataFactoryException(e);
         }

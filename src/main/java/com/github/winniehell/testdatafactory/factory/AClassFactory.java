@@ -3,6 +3,9 @@ package com.github.winniehell.testdatafactory.factory;
 import com.github.winniehell.testdatafactory.dummy.AClass;
 import org.apache.commons.lang3.Validate;
 
+import java.util.Collections;
+import java.util.Set;
+
 import static com.github.winniehell.testdatafactory.factory.TestDataFactory.Parameter.PARAM_A;
 
 /**
@@ -29,5 +32,10 @@ class AClassFactory implements TestDataFactory<AClass> {
         Validate.isTrue(this.parameter == null, "Parameter " + PARAM_A + " already set!");
         this.parameter = (String) value;
         return this;
+    }
+
+    @Override
+    public Set<Class> getSupportedClasses() {
+        return Collections.singleton((Class) AClass.class);
     }
 }

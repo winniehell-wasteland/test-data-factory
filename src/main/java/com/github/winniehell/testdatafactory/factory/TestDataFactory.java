@@ -2,6 +2,8 @@ package com.github.winniehell.testdatafactory.factory;
 
 import org.apache.commons.collections4.Factory;
 
+import java.util.Set;
+
 /**
  * {@link Factory} for test data of a specific type.
  *
@@ -32,4 +34,6 @@ public interface TestDataFactory<T> extends Factory<T> {
      * @throws IllegalArgumentException if test data does not support the given parameter
      */
     TestDataFactory<? extends T> with(Parameter parameter, Object value) throws IllegalArgumentException;
+
+    Set<Class> getSupportedClasses();
 }
