@@ -1,24 +1,28 @@
 package com.github.winniehell.testdatafactory.factory;
 
 import org.apache.commons.lang3.Validate;
+import org.reflections.Reflections;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Helper class for creating test data using a {@link #registerFactory(Class) registered} {@link
- * TestDataFactory}.
+ * Helper class for creating test data using a {@link #registerFactory(Class) registered} {@link TestDataFactory}.
  *
  * @author winniehell
  */
 public final class TestData {
 
-    private static final Map<Class<?>, Class<? extends TestDataFactory<?>>> testDataFactories = new HashMap<>();
+    private static final Map<Class<?>, Class<? extends TestDataFactory>> testDataFactories = new HashMap<>();
 
     static {
-        TestData.registerFactory(AClassFactory.class);
-        TestData.registerFactory(BClassFactory.class);
+        final Reflections reflections = new Reflections(TestData.class.getPackage().getName());
+        final Set<Class<? extends TestDataFactory>> factoryImplementations = reflections.getSubTypesOf(TestDataFactory.class);
+
+        for (final Class<? extends TestDataFactory> factoryClass : factoryImplementations) {
+            TestData.registerFactory(factoryClass);
+        }
     }
 
     /**
@@ -26,7 +30,7 @@ public final class TestData {
      *
      * @param factoryClass {@link TestDataFactory} class
      */
-    private static void registerFactory(final Class<? extends TestDataFactory<?>> factoryClass) {
+    private static void registerFactory(final Class<? extends TestDataFactory> factoryClass) {
         try {
             final TestDataFactory<?> dummyInstance = factoryClass.newInstance();
             final Set<Class> supportedClasses = dummyInstance.getSupportedClasses();
@@ -54,7 +58,7 @@ public final class TestData {
         try {
             Validate.isTrue(testDataFactories.containsKey(classUnderTest), "Unknown class under test!");
 
-            final Class<? extends TestDataFactory<?>> factoryClass = testDataFactories.get(classUnderTest);
+            final Class<? extends TestDataFactory> factoryClass = testDataFactories.get(classUnderTest);
 
             return (TestDataFactory<? extends T>) factoryClass.newInstance();
         } catch (final Exception e) {
